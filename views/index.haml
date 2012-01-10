@@ -1,0 +1,42 @@
+- content_for :js do
+  :javascript
+    $(document).ready(function () {
+      $("#api_request_submit").click(function (e) {
+        e.preventDefault();
+        $.ajax({
+          url: '#{url('/api_through_orm')}',
+          type: 'POST',
+          dataType: 'json',
+          data: {
+            email: $("#api_email_filed").val(),
+            password: $("#api_password_field").val()
+          },
+          success: function(data) {
+            if (data.status == 'ok') {
+              alert('API call successfully passed');
+            } else {
+              var errs = [];
+              $.each(data.errors, function (i, v) {
+                errs.push(v.field + ": " + v.message);
+              });
+              alert(errs.join("\n"));
+            }
+          }
+        });
+      });
+    });
+
+#header
+  %h1 Example application
+  %h2 Provide API call with validations from user through DataMapper ORM to back-end
+  
+#content
+  %form#api_request_form
+    .field
+      %label{ :for => 'email' } Email
+      %input{ :type => 'email', :name => 'email', :id => 'api_email_filed' }
+    .field
+      %label{ :for => 'password' } Password
+      %input{ :type => 'password', :name => 'password', :id => 'api_password_field' }
+    .button
+      %input{ :type => 'Submit', :value => 'Call API Provider', :id => 'api_request_submit' }
