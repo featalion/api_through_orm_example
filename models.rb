@@ -70,16 +70,14 @@ class ApiCallProvider
   end
   
   def request
-    if self.valid?
-      request = Net::HTTP::Get.new(self.api_uri, @headers)
-      resp = Net::HTTP.start(@server, @port) do |api|
-        api.request(request)
-      end
-
-      return process_api_response(resp)
-    else
-      raise RequestValidationError, "Not Valid"
+    raise RequestValidationError, "Not Valid" unless self.valid?
+    
+    request = Net::HTTP::Get.new(self.api_uri, @headers)
+    resp = Net::HTTP.start(@server, @port) do |api|
+      api.request(request)
     end
+
+    process_api_response(resp)
   end
   
   
