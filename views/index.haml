@@ -1,5 +1,23 @@
 - content_for :js do
   :javascript
+    // http://stackoverflow.com/questions/3593046/jquery-json-to-string
+    JSON.stringify = JSON.stringify || function (obj) {
+      var t = typeof (obj);
+      if (t != "object" || obj === null) {
+        if (t == "string") obj = '"'+obj+'"';
+        return String(obj);
+      } else {
+        var n, v, json = [], arr = (obj && obj.constructor == Array);
+        for (n in obj) {
+          v = obj[n]; t = typeof(v);
+          if (t == "string") v = '"'+v+'"';
+          else if (t == "object" && v !== null) v = JSON.stringify(v);
+          json.push((arr ? "" : '"' + n + '":') + String(v));
+        }
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");
+      }
+    };
+  
     $(document).ready(function () {
       $("#api_request_submit").click(function (e) {
         e.preventDefault();
@@ -13,7 +31,7 @@
           },
           success: function(data) {
             if (data.status == 'ok') {
-              alert('API call successfully passed');
+              alert("Response:\n" + JSON.stringify(data));
             } else {
               var errs = [];
               $.each(data.errors, function (i, v) {
@@ -29,6 +47,7 @@
 #header
   %h1 Example application
   %h2 Provide API call with validations from user through DataMapper ORM to back-end
+  %h2 Response validation by XSD and automate parsing XML to Ruby hash (Hash extended w/ #from_xml)
   
 #content
   %form#api_request_form

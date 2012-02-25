@@ -5,26 +5,19 @@ require 'sinatra/content_for'
 
 require 'haml'
 
-require 'net/http'
-
+require_relative 'lib/hash_from_xml'
 require_relative 'models'
 
 set :haml, :format => :html5
 set :json_encoder, :to_json
 
-helpers do
-  def make_api_call(server, port, path, api_model)
-    url = "http://#{server}:#{port}/#{path}"
-    puts url
-    # close connection after call by API server automatically
-    headers = { 'Connection' => 'close' }
-    
-    request = Net::HTTP::Get.new(url, headers)
-    resp = Net::HTTP.start(server, port) do |api|
-      api.request(request)
-    end
-    
-    JSON.parse(resp.body)
+helpers do  
+  def api_parameters(server, port, path)
+    {
+      'server'  => server,
+      'port'    => port,
+      'path'    => path
+    }
   end
 end
 
@@ -35,20 +28,38 @@ end
 post '/api_through_orm' do
   content_type :json
   
-  api_call_model = ApiCallProvider.new(params)
-  if api_call_model.valid?
+  # make API URL
+  api_params = api_parameters(request.host, request.port, 'api_stub')
+  api_call_model = ApiCallProvider.new(params, api_params)
+  begin
     # call stub handler
-    json make_api_call(request.host, request.port, 'api_stub', api_call_model)
-  else
+    response = api_call_model.request
+    response[:status] = 'ok'
+    puts response
+
+    json response
+  rescue RequestValidationError => err
     errs = []
     api_call_model.errors.each_pair { |k, v| errs << { field: k, message: v } }
     
-    json status: 'error', errors: errs
+    json status: 'error', errors: errs    
+  rescue ApiError => err
+    json status: 'error', errors: [{ field: 'API', message: err.message }]
   end
 end
 
 get '/api_stub' do
-  content_type :json
+  content_type 'text/xml'
   
-  json status: 'ok' 
+  xml = ['<?xml version="1.0" encoding="UTF-8" standalone="no" ?>',
+         '<p1:UserData xmlns:p1="urn:exampleuserdata" ' +
+         'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+         'xsi:noNamespaceSchemaLocation="userdata.xsd">',
+         '  <firstName>Maurits Cornelis</firstName>',
+         '  <lastName>Escher</lastName>',
+         '  <age>113</age>',
+         '</p1:UserData>'
+        ].join("\n")
+  
+  xml
 end
