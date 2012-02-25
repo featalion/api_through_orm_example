@@ -1,6 +1,8 @@
 require 'data_mapper'
 require 'net/http'
 require 'nokogiri'
+require 'uri'
+require 'digest/sha1'
 
 #
 # If you need to use another default DB
@@ -69,7 +71,7 @@ class ApiCallProvider
   
   def request
     if self.valid?
-      request = Net::HTTP::Get.new(self.api_url, @headers)
+      request = Net::HTTP::Get.new(self.api_uri, @headers)
       resp = Net::HTTP.start(@server, @port) do |api|
         api.request(request)
       end
@@ -114,6 +116,17 @@ class ApiCallProvider
     end
     
     ud
+  end
+  
+  def api_uri
+    uri = self.api_url +
+          "?email=" +
+          URI.escape(self.email, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")) +
+          "&password=" +
+          URI.escape(Digest::SHA1.hexdigest(self.password),
+                     Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")
+          )
+    uri
   end
   
 end
