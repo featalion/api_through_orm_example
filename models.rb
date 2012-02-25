@@ -72,7 +72,7 @@ class ApiCallProvider
   def request
     raise RequestValidationError, "Not Valid" unless self.valid?
     
-    request = Net::HTTP::Get.new(self.api_uri, @headers)
+    request = Net::HTTP::Get.new(api_uri(), @headers)
     resp = Net::HTTP.start(@server, @port) do |api|
       api.request(request)
     end
