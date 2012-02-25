@@ -1,4 +1,4 @@
-Example application (DataMapper ORM for provide API calls through)
+Example application
 ==================================================================
 
 ## List of features
@@ -10,4 +10,5 @@ Example application (DataMapper ORM for provide API calls through)
 You can see the article on this example [URL](http://iron.io/)
 
 Copyright &copy; Yury Yantsevich, Iron.io
+
 Code is under MIT license.
