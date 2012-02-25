@@ -99,8 +99,8 @@ class ApiCallProvider
     end
 
     # error from the API
-    error = doc.xpath( '//errorMessage' )
-    raise ApiError, error.to_s unless error.empty?
+    error = doc.xpath('//errorMessage')
+    raise ApiError, error.to_s unless error.nil? or error.empty?
 
     ud = nil
     begin
