@@ -35,7 +35,6 @@ post '/api_through_orm' do
     # call stub handler
     response = api_call_model.request
     response[:status] = 'ok'
-    puts response
 
     json response
   rescue RequestValidationError => err
